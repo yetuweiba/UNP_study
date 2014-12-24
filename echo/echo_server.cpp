@@ -1,11 +1,13 @@
 #include <bits/types.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <iostream>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <signal.h>
 
 //typedef void(*signal (int signo, void(*func)(int)))(int);
 typedef void Sigfunc(int);
@@ -13,9 +15,9 @@ Sigfunc* signal(int signo, Sigfunc *func)
 {
     struct sigaction act, oact;
     act.sa_handler = func;
-    sigemptyset(&act.as_mask);
+    sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
-    if(signo == SIGALRM)
+   /* if(signo == SIGALRM)
     {
 #ifdef SA_INTERRUPT
         act.sa_flags |= SA_INTERRUT;
@@ -24,9 +26,9 @@ Sigfunc* signal(int signo, Sigfunc *func)
     else
     {
 #ifdef SA_RESTART
-        ac.as_flags |= SA_RESULT;
+        act.sa_flags |= SA_RESULT;
 #endif
-    }
+    }*/
     if(sigaction(signo, &act, &oact) < 0)
     {
         return SIG_ERR;
@@ -50,7 +52,7 @@ Sigfunc * Signal(int signo, Sigfunc *func)
     Sigfunc *sigfunc;
 
     if((sigfunc = signal(signo, func)) == SIG_ERR)
-        err_sys("signal error");
+        std::cout << "signal error" << std::endl;
     return sigfunc;
 }
 
@@ -137,7 +139,7 @@ int main(int argc, char **argv)
         std::cout << "listen is error: " << ret << std::endl;
         return ret;
     }
-
+    Signal(SIGCHLD, sig_chld);
     for( ; ; )
     {
         std::cout << "process" << std::endl;
@@ -147,6 +149,7 @@ int main(int argc, char **argv)
         {
             std::cout << "accept is error: " << connfd << std::endl;
             std::cout << "error:" << errno << std::endl;
+            continue;
         }
         if ((childpid = fork()) ==0 )
         {
