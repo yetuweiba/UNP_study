@@ -35,6 +35,7 @@ void cli_echo(FILE* fp, const int sockfd)
                 else
                 {
                     std::cout << "error" << std::endl;
+                    break;
                 }
             }
             std::cout << "buf: " << buf << std::endl;
