@@ -51,4 +51,42 @@ size_t Read(int fd, void *ptr, size_t nbytes)
     }
     return n;
 }
+
+int readline(int fd, char *buffer)
+{
+    if(!buf)
+    {
+        return 0;
+    }
+
+    char data = 0;
+    int read_len = 0;
+    while(true)
+    {
+        rc = read(fd, &data, 1);
+        if(rc == 1)
+        {
+            if(data == '\n')
+            {
+                buffer[++read_len] = '\0';
+                break;
+            }
+            buffer[++read_len] = data;
+        }
+        else if(rc == 0)
+        {
+            buffer[++read_len] = '\0';
+            break;
+        }
+        else
+        {
+            if(errno == EINTR)
+                continue;
+            read_len = -1;
+            break;
+        }
+    }
+
+    return read_len;
+}
 #endif
